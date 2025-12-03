@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Hub - Mocha Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        :root {
+            /* --- DEFAULT: PEACH LATTE (LIGHT) --- */
+            --bg-color: #fdf6e3;      
+            --card-bg: #fffbf0;        
+            --accent: #e7cba9;        
+            --accent-secondary: #f4acb7; 
+            --text-main: #5d4037;        
+            --text-secondary: #8d6e63;
+            --border-color: #fae1dd;
+            --font-main: 'Quicksand', sans-serif;
+            --radius: 20px; 
+            --shadow: 4px 4px 0px rgba(231, 203, 169, 0.5);
+            --gradient: radial-gradient(circle at 10% 20%, #fdf6e3 0%, #fae1dd 90%);
+            
+            /* Avatar Filter - Light Mode: FIXED
+               Changed from peach to a distinct pinkish tone.
+               - hue-rotate(-40deg) shifts sepia towards pink/magenta.
+               - saturate(1.3) makes the pink color pop.
+            */
+            --avatar-filter: grayscale(1) sepia(0.6) brightness(1.25) contrast(1.0) hue-rotate(-40deg) saturate(1.3);
+
+            /* --- STATUS PILL COLORS (LIGHT MODE) --- */
+            /* UPDATED: Strictly Coffee/Nature themed (Matcha, Berry, Caramel) */
+            --pill-coding: #8fab92;    /* Matcha Green */
+            --pill-editing: #d68c94;   /* Muted Berry */
+            --pill-planning: #dcb386;  /* Caramel/Latte */
+            --pill-hold: #e2a7a7;      /* Muted Pink (Rose) */
+            --pill-text-light: #fff;   /* White text for pills */
+        }
+
+        /* --- DARK MODE: MOCHA ROAST (WARM) --- */
+        body.dark-mode {
+            --bg-color: #2b2424;      /* Deep Espresso */
+            --card-bg: #382e2e;       /* Dark Mocha */
+            --accent: #a68b7c;        /* Muted Cocoa */
+            --accent-secondary: #d49a89; /* Dusty Rose Dark */
+            --text-main: #ede0d4;     /* Steamed Milk */
+            --text-secondary: #b09e99;
+            --border-color: #4a3b3b;
+            --shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            --gradient: radial-gradient(circle at 50% 0%, #382e2e 0%, #2b2424 90%);
+
+            /* Avatar Filter - Dark Mode: FIXED
+               Tuned for a rich, deep "chocolate" brown.
+               - sepia(0.8) provides a strong brown base.
+               - hue-rotate(-25deg) shifts the brown towards a warmer, redder chocolate tone.
+               - brightness(0.7) & contrast(1.3) create the deep, dark look.
+            */
+            --avatar-filter: grayscale(1) sepia(0.8) hue-rotate(-25deg) brightness(0.7) contrast(1.3);
+
+            /* --- STATUS PILL COLORS (DARK MODE) --- */
+            /* UPDATED: Deeper Roast variations */
+            --pill-coding: #5f7a60;    /* Dark Matcha */
+            --pill-editing: #a86b72;   /* Dried Berry */
+            --pill-planning: #9c7b56;  /* Dark Toffee */
+            --pill-hold: #d98695;      /* Dusty Rose */
+            --pill-text-light: #ede0d4; /* Off-white text */
+
+            /* --- GAME STATUS DOT COLORS (DARK MODE) --- */
+            --game-active: #5f7a60;    /* Dark Matcha */
+            --game-paused: #9c7b56;    /* Toffee */
+            --game-dropped: #6d4c41;   /* Dark Bean (Red-Brown) */
+        }
+
+        /* --- ACCOUNT DROPDOWN STYLES --- */
+        .account-btn {
+            background: var(--accent);
+            color: var(--text-main);
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .account-btn:hover {
+            filter: brightness(0.95);
+            transform: translateY(-1px);
+        }
+        
+        .account-list-container {
+            width: 100%;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 12px;
+            background: rgba(0,0,0,0.03); /* Subtle backdrop for light mode */
+            border-radius: 12px;
+            border: 1px dashed var(--border-color);
+        }
+        
+        body.dark-mode .account-list-container {
+            background: rgba(255,255,255,0.05); /* Subtle backdrop for dark mode */
+        }
+
+        .account-item-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            align-items: center; /* Ensures vertical alignment */
+        }
+        
+        /* Account Link Styling */
+        .account-link {
+            text-decoration: none;
+            color: var(--text-main);
+            transition: color 0.2s ease;
+            border-bottom: 1px dotted transparent;
+        }
+        
+        .account-link:hover {
+            color: var(--accent-secondary);
+            border-bottom-color: var(--accent-secondary);
+        }
+        
+        /* Trophy/Status text style */
+        .clash-status-pill {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: #fff; /* Default text color */
+        }
+        
+        /* Clash Status Colors */
+        .clash-status-pill.main { background: var(--pill-editing); color: var(--pill-text-light); } /* Berry */
+        .clash-status-pill.maining { background: var(--pill-planning); color: var(--pill-text-light); } /* Caramel */
+        .clash-status-pill.active { background: var(--pill-coding); color: var(--pill-text-light); } /* Matcha */
+        .clash-status-pill.inactive { background: #9e9e9e; color: #fff; } /* Grey */
+        body.dark-mode .clash-status-pill.inactive { background: #616161; } /* Darker Grey */
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 20px;
+            height: 100vh; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; 
+            background-image: var(--gradient);
+            transition: background 0.3s ease, color 0.3s ease;
+            
+            user-select: none;             
+            -webkit-user-select: none;    
+            -moz-user-select: none;        
+            cursor: default;                
+        }
+
+        a, button, .mobile-toggle-btn {
+            cursor: pointer;
+        }
+
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        #splash-screen h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .enter-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-secondary);
+            color: var(--text-main);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: var(--font-main);
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 6px 6px 0px var(--accent-secondary);
+        }
+
+        .hidden-splash {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* --- SETTINGS MENU --- */
+        .settings-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .settings-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+            padding: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .settings-btn:hover, .settings-btn.active {
+            transform: scale(1.1);
+            border-color: var(--accent-secondary);
+            color: var(--accent-secondary);
+        }
+
+        .settings-dropdown {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 200px;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .settings-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .setting-row:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        body.dark-mode .setting-row:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .setting-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Mobile adjustment */
+        @media (max-width: 600px) {
+            .settings-container {
+                top: 15px;
+                right: 15px;
+            }
+            .settings-btn {
+                width: 40px;
+                height: 40px;
+                padding: 8px;
+            }
+        }
+
+        .bento-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: 0.9fr 0.3fr 1.8fr 0.8fr; 
+            gap: 15px; 
+            width: 95vw; 
+            max-width: 1800px;
+            height: 90vh; 
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 25px;
+            border: 2px solid var(--border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+        
+        .card:not(.area-clock):not(.area-map):not(.area-socials):not(.area-youtube):hover { 
+            transform: translate(-2px, -2px); /* Pop up effect */
+            box-shadow: 6px 6px 0px var(--accent-secondary); 
+            border-color: var(--accent-secondary); 
+            z-index: 50; 
+        }
+
+        /* PLACEMENT */
+        .area-profile { grid-column: span 2; grid-row: 1 / span 2; display: flex; flex-direction: row; align-items: center; justify-content: space-between; background: var(--card-bg); }
+        .area-clock { grid-column: 3; grid-row: 1; text-align: center; justify-content: center; display: flex; flex-direction: column; }
+        .area-map { grid-column: 4; grid-row: 1; padding: 0; min-height: 0; position: relative; overflow: hidden; }
+        .area-games { grid-column: 3 / span 2; grid-row: 2 / span 2; }
+        .area-projects { grid-column: span 2; grid-row: 3; }
+        .area-youtube { grid-column: span 2; grid-row: 4; display: flex; flex-direction: row; gap: 15px; background: transparent; border: none; padding: 0; box-shadow: none; overflow: visible; }
+        .area-socials { grid-column: span 2; grid-row: 4; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0; background: transparent; border: none; box-shadow: none; overflow: visible; }
+        .area-youtube > * { flex: 1; } 
+
+        /* CONTENT */
+        .map-custom-image {
+            width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;
+            /* Light Mode: Source is white. Multiply drops white. Sepia tints lines brown. */
+            filter: sepia(0.8) hue-rotate(-15deg) contrast(1.1);
+            mix-blend-mode: multiply;
+            opacity: 0.9;
+            transition: transform 0.5s ease, filter 0.3s ease, opacity 0.3s ease;
+        }
+        /* Dark mode map adjustment */
+        body.dark-mode .map-custom-image {
+            /* Dark Mode: Invert white source to black. Screen drops black. Tint light lines. */
+            filter: invert(1) sepia(0.4) hue-rotate(-10deg) brightness(0.9) contrast(1.1);
+            mix-blend-mode: screen;
+            opacity: 0.7;
+        }
+        
+        h2 { margin: 0 0 15px 0; color: var(--accent-secondary); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
+        
+        /* Removed extra padding as button is now external */
+        .profile-info {
+            padding-top: 0; 
+        }
+
+        .profile-info h1 { margin: 0; font-size: 2.2rem; color: var(--text-main); } 
+        .profile-info p { opacity: 0.7; margin-top: 5px; color: var(--text-secondary); font-weight: 600; }
+        
+        /* --- NEW AVATAR STRUCTURE FOR ROTATING SHADOW --- */
+        
+        /* The container handles size and rotation */
+        .avatar-container {
+            width: 100px; 
+            height: 100px; 
+            border-radius: var(--radius); 
+            /* FIXED: Removed border from container to prevent corner gaps */
+            flex-shrink: 0;
+            position: relative; /* Needed for pseudo-element shadow */
+            transition: transform 0.2s ease;
+            z-index: 1;
+        }
+
+        /* The shadow is now a pseudo-element behind the container. */
+        .avatar-container::after {
+            content: '';
+            position: absolute;
+            top: 4px;  /* Matches initial shadow offset */
+            left: 4px;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            background: rgba(231, 203, 169, 0.5); /* Light mode shadow color */
+            z-index: -1; /* Behind the image */
+            transition: all 0.2s ease;
+        }
+
+        /* Dark mode shadow color */
+        body.dark-mode .avatar-container::after {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* The image itself handles the color filter AND THE BORDER now */
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* FIXED: Border moved here so it hugs the image content perfectly */
+            border: 3px solid var(--accent-secondary);
+            border-radius: var(--radius);
+            display: block;
+            filter: var(--avatar-filter);
+            /* Default: No transition on filter to prevent green flash in Light Mode */
+            transition: none; 
+            background-color: var(--card-bg); /* Failsafe background */
+        }
+
+        /* UPDATED: Add transition back ONLY for Dark Mode */
+        body.dark-mode .avatar-img {
+            transition: filter 0.3s ease;
+        }
+        
+        /* HOVER STATES */
+        .avatar-container:hover {
+            /* Rotation is back! */
+            transform: scale(1.05) rotate(2deg);
+        }
+
+        /* Expand shadow and change color on hover */
+        .avatar-container:hover::after {
+            top: 6px;
+            left: 6px;
+            background: var(--accent-secondary);
+        }
+
+        /* Reveal original image colors on hover */
+        .avatar-container:hover .avatar-img {
+            filter: none;
+        }
+
+
+        .clock-time { font-size: 2.8rem; font-weight: 700; font-family: var(--font-main); color: var(--text-main); line-height: 1; }
+        .clock-date { font-size: 1rem; color: var(--accent-secondary); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+
+        /* PADDING FIX RETAINED - ADJUSTED FOR COMPACT DESKTOP */
+        .project-list { display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; padding-right: 15px; }
+        .project-list::-webkit-scrollbar { width: 6px; }
+        .project-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+        
+        .project-item { 
+            background: rgba(255,255,255,0.5); 
+            padding: 12px; 
+            border-radius: 15px; 
+            border: 2px solid var(--border-color);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            transition: 0.2s; 
+            flex-shrink: 0; 
+            /* Added to support link styling without breaking design */
+            text-decoration: none;
+            color: var(--text-main);
+            /* Removed global cursor:pointer so static items don't look clickable */
+        }
+        body.dark-mode .project-item { background: rgba(0,0,0,0.2); }
+
+        /* UPDATED: Only clickable links (<a> tags) get the hover highlight and pointer cursor */
+        a.project-item { cursor: pointer; }
+        a.project-item:hover { border-color: var(--accent-secondary); }
+
+        .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        
+        /* New Classes for specific pill types */
+        .status-pill.coding { background: var(--pill-coding); color: var(--pill-text-light); }
+        .status-pill.editing { background: var(--pill-editing); color: var(--pill-text-light); }
+        .status-pill.planning { background: var(--pill-planning); color: var(--pill-text-light); }
+        .status-pill.hold { background: var(--pill-hold); color: var(--pill-text-light); }
+
+        /* --- GAME STATUS DOTS --- */
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        
+        /* Game Status Colors mapped to variables */
+        .status-dot.active { background-color: var(--pill-coding); }   /* Reusing the Green */
+        .status-dot.paused { background-color: var(--pill-planning); } /* Reusing the Caramel */
+        .status-dot.dropped { background-color: var(--pill-hold); }    /* Reusing the Grey */
+
+        .social-card { 
+            height: 100%; 
+            background: var(--card-bg); 
+            border: 2px solid var(--border-color); 
+            border-radius: var(--radius); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            padding: 20px; 
+            text-decoration: none; 
+            color: var(--text-main);
+            transition: 0.2s; 
+            box-shadow: var(--shadow);
+        }
+        .social-card:hover { 
+            background: var(--card-bg);
+            filter: brightness(1.05); 
+            transform: translate(-2px, -2px); 
+            box-shadow: 6px 6px 0px rgba(244, 172, 183, 0.4); 
+            border-color: var(--accent-secondary); 
+        }
+        
+        .map-label-box {
+            position: absolute; bottom: 15px; left: 15px;
+            background-color: var(--card-bg); 
+            border: 2px solid var(--accent-secondary); 
+            color: var(--accent-secondary); 
+            padding: 6px 16px; border-radius: 12px;
+            font-weight: 800; font-size: 0.9rem;
+            z-index: 2; pointer-events: none; 
+        }
+
+        /* Separator Line */
+        .separator {
+            width: 100%; /* UPDATED: Now spans the full width */
+            /* Changed 'dashed' to 'solid' for a full line */
+            border-top: 2px solid var(--border-color);
+            margin-bottom: 5px; /* Space below the line */
+            margin-top: 0px;
+        }
+
+        /* PADDING FIX RETAINED & ADJUSTED FOR COMPACT DESKTOP */
+        /* UPDATED: Removed border-top and padding-top from here, as it's now handled by .separator */
+        .game-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 5px; 
+            overflow-y: auto; 
+            flex-grow: 1; 
+            padding-right: 15px; 
+        }
+        .game-grid::-webkit-scrollbar { width: 5px; }
+        .game-grid::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        
+        .game-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 2px dashed var(--border-color); }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online { background-color: #9dceaa; } 
+        .grinding { background-color: #f4acb7; } 
+
+        .yt-card { 
+            height: 100%; 
+            background: #ffb5a7; 
+            border-radius: var(--radius); 
+            padding: 20px; 
+            color: #5d4037; 
+            text-decoration: none; 
+            display: flex; align-items: center; gap: 15px; justify-content: center; transition: 0.2s; 
+            box-shadow: var(--shadow);
+            border: 2px solid #ffcad4;
+        }
+        /* Dark mode overrides for YT card */
+        body.dark-mode .yt-card {
+            background: #a16e66;
+            color: #fff;
+            border-color: #7a504a;
+            box-shadow: var(--shadow); /* Fixed: Now uses the consistent hard shadow */
+        }
+        /* Updated Hover to ensure visibility in dark mode */
+        body.dark-mode .yt-card:hover {
+            box-shadow: 6px 6px 0px var(--accent-secondary);
+        }
+        
+        .yt-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px rgba(255, 181, 167, 0.4); }
+        
+        .mobile-toggle-btn {
+            display: none; width: 100%; padding: 10px; margin-top: 10px;
+            background: var(--card-bg); border: 2px solid var(--accent);
+            color: var(--text-secondary); border-radius: 12px;
+            cursor: pointer; font-weight: bold; text-align: center;
+        }
+
+        /* --- TOAST NOTIFICATION --- */
+        #toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 2px solid var(--accent-secondary);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            z-index: 10000;
+            font-family: var(--font-main);
+            font-weight: bold;
+            font-size: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        visibility 0.3s;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #toast-notification.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            body { height: 100vh; overflow: hidden; }
+            .bento-container { 
+                grid-template-columns: repeat(3, 1fr); grid-template-rows: 0.6fr 2.2fr 0.6fr;
+                width: 98vw; height: calc(100vh - 40px); min-height: 0; gap: 15px;
+            }
+            .area-profile { grid-column: 1 / 3; grid-row: 1; } 
+            .area-clock { grid-column: 3; grid-row: 1; }
+            .area-projects { grid-column: 1; grid-row: 2; }
+            .area-games { grid-column: 2; grid-row: 2; } 
+            .area-socials { grid-column: 3; grid-row: 2; grid-template-columns: repeat(2, 1fr); }
+            .area-map { grid-column: 1; grid-row: 3; }
+            .area-youtube { grid-column: 2 / 4; grid-row: 3; }
+            .card { padding: 15px; }
+
+            /* RESTORE ORIGINAL SPACING FOR TABLET & MOBILE */
+            .project-list { gap: 12px; }
+            .project-item { padding: 15px; }
+            .game-grid { gap: 8px; }
+            .game-row { padding: 10px; }
+        }
+
+        @media (max-width: 600px) {
+            body { height: auto; min-height: 100vh; overflow: auto; align-items: flex-start; }
+            .bento-container { display: flex; flex-direction: column; gap: 10px; height: auto; overflow-anchor: none; }
+            
+            /* --- MOBILE PROFILE UPDATE --- */
+            .area-profile { 
+                flex-direction: row; 
+                text-align: left; 
+                align-items: center; 
+                justify-content: flex-start; 
+                gap: 15px; 
+                order: 1; 
+            }
+            
+            /* Target the new container for layout */
+            .avatar-container {
+                width: 45px; 
+                height: 45px;
+                order: -1; 
+                /* Disable interactions on mobile */
+                pointer-events: none;
+            }
+            
+            /* Target the image to remove filter and shrink border */
+            .avatar-img {
+                filter: none !important;
+                border-width: 2px;
+            }
+
+            /* Adjust shadow for tiny mobile avatar */
+            .avatar-container::after {
+                top: 2px;
+                left: 2px;
+            }
+
+
+            .profile-info h1 { font-size: 1.5rem; }
+            .pill-container { justify-content: flex-start; } 
+
+            .area-youtube { flex-direction: column; order: 2; }
+            .area-socials { grid-template-columns: 1fr 1fr; order: 3; margin-top: -8px; } 
+            .area-projects { order: 4; }
+            .area-games    { order: 5; }
+            .area-clock    { order: 6; }
+            .card { min-height: auto; } 
+            .area-map { min-height: auto; height: 160px; order: 7; } 
+            .mobile-toggle-btn { display: block; }
+            .project-list.mobile-collapsed .project-item:nth-child(n+3) { display: none; }
+            .game-grid.mobile-collapsed .game-row:nth-child(n+4) { display: none; }
+            .project-list { padding-right: 0; }
+            .game-grid { padding-right: 5px; }
+            /* Mobile adjustment for toast */
+            #toast-notification {
+                bottom: 20px;
+                width: 90%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="splash-screen">
+        <h1>Welcome</h1>
+        <button class="enter-btn" onclick="enterHub()">Enter Hub</button>
+    </div>
+
+    <!-- NEW SETTINGS MENU STRUCTURE -->
+    <div class="settings-container">
+        <button class="settings-btn" id="settings-btn" onclick="toggleSettings()" title="Settings">
+            <!-- Hamburger Icon -->
+            <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round;">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <div class="settings-dropdown" id="settings-dropdown">
+            <div class="setting-row" onclick="toggleTheme()">
+                <span>Theme</span>
+                <span id="theme-icon-display" class="setting-icon">
+                    <!-- Default Sun Icon -->
+                </span>
+            </div>
+            <div class="setting-row" onclick="toggleSound()">
+                <span>Sound</span>
+                <span id="sound-icon-display" class="setting-icon">
+                    <!-- Default Speaker Icon -->
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bento-container">
+        <div class="card area-profile">
+            <div class="profile-info">
+                <h1>[AtkJink]</h1>
+                <p>Full Stack Dev & Content Creator</p>
+                <div class="pill-container" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <span class="status-pill" style="background: var(--accent); color: var(--text-main);">Programmer</span>
+                    <span class="status-pill" style="background: var(--accent-secondary); color: #fff;">Creator</span>
+                </div>
+            </div>
+            <!-- UPDATED AVATAR STRUCTURE for rotating shadow -->
+            <div class="avatar-container">
+                <img src="https://yt3.ggpht.com/P124APh8sxttdCKvdy2pbvPhyOR3iq_OdwJ_OfaT_RqjwVna7CwUqZsknkXha7u45Bo2i5-iOQ=s600-c-k-c0x00ffffff-no-rj-rp-mo" alt="Avatar" class="avatar-img">
+            </div>
+        </div>
+
+        <div class="card area-clock">
+            <div class="clock-time" id="clock-time">00:00:00</div>
+            <div class="clock-date" id="clock-date">...</div>
+        </div>
+
+        <div class="card area-map">
+            <img src="https://media.istockphoto.com/id/1498710930/vector/europe-map-isolated-on-a-white-background-europe-map-high-detailed-vector-illustration.jpg?s=612x612&w=0&k=20&c=lQ51uS4tpgJH0yloFYs0d486ymf3mnvHwzXvLfu8V-w=" 
+                 alt="Map Region" class="map-custom-image">
+            <div class="map-label-box">UK</div>
+        </div>
+
+        <div class="card area-projects">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <!-- Updated Title -->
+                <h2>Active Projects</h2>
+                <span style="font-size:0.8rem; opacity:0.5; color: var(--text-secondary);">5 Projects</span>
+            </div>
+            <div class="project-list mobile-collapsed" id="project-list">
+                <!-- Standard Item -->
+                <div class="project-item"><span>Card Strategy Game</span><span class="status-pill coding">Coding</span></div>
+                
+                <!-- Linked Item: Updated with your actual playlist URL -->
+                <a href="https://www.youtube.com/playlist?list=PLfw9zS3Rl8WTIGqf6aLHBQ3QYs8YEIz1F" target="_blank" class="project-item">
+                    <span>Complete Ori Series</span>
+                    <span class="status-pill editing">Editing</span>
+                </a>
+                
+                <!-- Standard Item -->
+                <div class="project-item"><span>Solo Cooking Game</span><span class="status-pill planning">Planning</span></div>
+                
+                <!-- REVERTED: Changed back to non-clickable div -->
+                <div class="project-item">
+                    <span>Osu Maps</span>
+                    <span class="status-pill planning">Planning</span>
+                </div>
+                
+                <!-- Linked Item: Updated with your actual playlist URL -->
+                <a href="https://www.youtube.com/playlist?list=PLeXQEAsDC3TqbWgTnc0yXlgP7PXnFyBrz" target="_blank" class="project-item">
+                    <span>Minecraft Series</span>
+                    <span class="status-pill hold">On-Hold</span>
+                </a>
+            </div>
+            <button class="mobile-toggle-btn" onclick="toggleProjects()" id="btn-projects">Show More ▼</button>
+        </div>
+
+        <div class="card area-games">
+            <!-- Reduced margin-bottom to 2px to raise the line closer -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0px;">
+                <!-- Updated Title -->
+                <h2>Games I Like</h2>
+            </div>
+            <!-- New Separator Line -->
+            <div class="separator"></div>
+            <div class="game-grid mobile-collapsed" id="games-list">
+                <div class="game-row"><span>Terraria</span><span><span class="status-dot active"></span>Active</span></div>
+                
+                <!-- Clash Royale Row with Dropdown -->
+                <div class="game-row" style="flex-wrap: wrap;">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <span>Clash Royale</span>
+                        <button class="status-pill account-btn" onclick="toggleClashAccounts(this)">Accounts ▼</button>
+                    </div>
+                    <!-- Dropdown Content: Generated by JS now for the live effect -->
+                    <div id="clash-accounts" class="account-list-container">
+                        <!-- Items will be injected here by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="game-row"><span>Binding of Isaac</span><span><span class="status-dot active"></span>Active</span></div>
+                <div class="game-row"><span>Osu!</span><span><span class="status-dot active"></span>Active</span></div>
+                <div class="game-row"><span>Portal</span><span><span class="status-dot paused"></span>Inactive</span></div>
+                <div class="game-row"><span>Cuphead</span><span><span class="status-dot paused"></span>Inactive</span></div>
+                <div class="game-row"><span>Slime Rancher</span><span><span class="status-dot dropped"></span>Dropped</span></div>
+                <div class="game-row"><span>Hollow Knight</span><span><span class="status-dot paused"></span>Inactive</span></div>
+                <div class="game-row"><span>Dead Cells</span><span><span class="status-dot dropped"></span>Dropped</span></div>
+                <div class="game-row"><span>Minecraft</span><span><span class="status-dot active"></span>Active</span></div>
+                <div class="game-row"><span>Monaco</span><span><span class="status-dot paused"></span>Inactive</span></div>
+                <div class="game-row"><span>Overcooked</span><span><span class="status-dot dropped"></span>Dropped</span></div>
+            </div>
+            <button class="mobile-toggle-btn" onclick="toggleGames()" id="btn-games">Show More ▼</button>
+        </div>
+
+        <div class="card area-socials">
+            <a href="#" class="social-card" style="border-color: #ffccbc;" onclick="copyEmail(event)">
+                <svg style="width:30px; fill:#ff8a65;" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>Email</span>
+            </a>
+            <!-- UPDATED: Replaced placeholder with your actual Invite Link -->
+            <a href="https://discord.gg/wP6MvK6V" target="_blank" class="social-card" style="border-color: #c5cae9;">
+                <svg style="width:30px; fill:#7986cb;" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.699.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419z"/></svg><span>Discord</span>
+            </a>
+            <!-- UPDATED: Replaced placeholder with your actual Spotify Playlist link -->
+            <a href="https://open.spotify.com/playlist/3iol0d3Qn2EkvKT5IPcKOZ?si=z-Ewdx5sQv2dnw56g8C86A" target="_blank" class="social-card" style="border-color: #c8e6c9;">
+                <svg style="width:30px; fill:#81c784;" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 14.52 1.08.54.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.24z"/></svg><span>Spotify</span>
+            </a>
+            <!-- UPDATED: Replaced placeholder with 'AtkJink' -->
+            <a href="https://anilist.co/user/AtkJink" target="_blank" class="social-card" style="border-color: #b3e5fc;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/61/AniList_logo.svg" alt="AniList" style="width:40px; height:40px; object-fit: contain; filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.1));">
+                <span>AniList</span>
+            </a>
+            <!-- REVERTED: Now a simple link that opens the website in a new tab -->
+            <a href="https://steamcommunity.com/profiles/76561198869838885" target="_blank" class="social-card" style="border-color: #cfd8dc;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg" alt="Steam" style="width:30px; height:30px; object-fit: contain;">
+                <span>Steam</span>
+            </a>
+            <!-- UPDATED: Replaced placeholder with your actual Osu ID -->
+            <a href="https://osu.ppy.sh/users/38170550" target="_blank" class="social-card" style="border-color: #f8bbd0;">
+                <svg style="width:30px; fill:#f48fb1;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><text x="12" y="15.5" font-size="9" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-weight="bold">osu!</text></svg>
+                <span>Osu!</span>
+            </a>
+        </div>
+
+        <div class="card area-youtube">
+            <!-- Replace 'YOUR_MAIN_CHANNEL_LINK' with your actual YouTube URL -->
+            <a href="https://youtube.com/channel/UCag6SBVUszALiMiRDsa0QYw" target="_blank" class="yt-card">
+                <div style="background: rgba(255,255,255,0.4); padding: 10px; border-radius: 50%;">▶</div>
+                <div><b>AtkJink</b><br><small>12.5k Subs</small></div>
+            </a>
+            
+            <!-- Replace 'YOUR_SECOND_CHANNEL_LINK' with your actual YouTube URL -->
+            <a href="https://youtube.com/channel/UCXAu031uIhKVk5LIztR3Npg" target="_blank" class="yt-card" style="background: #e7cba9; color: #5d4037; border-color: #d7ccc8;">
+                <div style="background: rgba(255,255,255,0.4); padding: 10px; border-radius: 50%;">▶</div>
+                <div><b>AtkJinkVODS</b><br><small>3.2k Subs</small></div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Toast Notification Element -->
+    <div id="toast-notification">
+        <svg style="width:20px; height:20px; fill:var(--accent-secondary);" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Email Copied!
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeOptions = { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+            document.getElementById('clock-time').textContent = now.toLocaleTimeString('en-GB', timeOptions);
+            document.getElementById('clock-date').textContent = now.toLocaleDateString('en-GB', dateOptions);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function toggleProjects() {
+            var list = document.getElementById("project-list");
+            var btn = document.getElementById("btn-projects");
+            list.classList.toggle("mobile-collapsed");
+            btn.innerHTML = list.classList.contains("mobile-collapsed") ? "Show More ▼" : "Show Less ▲";
+        }
+
+        function toggleGames() {
+            var list = document.getElementById("games-list");
+            var btn = document.getElementById("btn-games");
+            list.classList.toggle("mobile-collapsed");
+            btn.innerHTML = list.classList.contains("mobile-collapsed") ? "Show More ▼" : "Show Less ▲";
+        }
+        
+        // Toggle Clash Royale Accounts Dropdown
+        function toggleClashAccounts(btn) {
+            const list = document.getElementById('clash-accounts');
+            if (list.style.display === 'flex') {
+                list.style.display = 'none';
+                btn.innerHTML = 'Accounts ▼';
+            } else {
+                list.style.display = 'flex';
+                btn.innerHTML = 'Close ▲';
+            }
+            playLofiSound('click');
+        }
+
+        // (Removed openSteamProfile function)
+        
+        // Define Icons for reuse
+        const sunIcon = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2" stroke="currentColor" stroke-width="2"/><path d="M12 20v2" stroke="currentColor" stroke-width="2"/><path d="M4.93 4.93l1.41 1.41" stroke="currentColor" stroke-width="2"/><path d="M17.66 17.66l1.41 1.41" stroke="currentColor" stroke-width="2"/><path d="M2 12h2" stroke="currentColor" stroke-width="2"/><path d="M20 12h2" stroke="currentColor" stroke-width="2"/><path d="M6.34 17.66l-1.41 1.41" stroke="currentColor" stroke-width="2"/><path d="M19.07 4.93l-1.41 1.41" stroke="currentColor" stroke-width="2"/></svg>';
+        const moonIcon = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>';
+        const soundOnIcon = '<svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>';
+        const soundOffIcon = '<svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+
+        // --- GLOBAL SOUND STATE ---
+        let soundEnabled = true;
+
+        // --- CLASH ROYALE DATA & SIMULATION ---
+        // INSTRUCTIONS: 
+        // 1. Enter your approximate trophies in 'trophies'.
+        // --- CLASH ROYALE DATA ---
+        // Updated with Statuses instead of Trophies
+        const clashAccountsData = [
+            { name: 'jim',         status: 'Main',     style: 'main',     tag: 'UUJLGYJCU' },
+            { name: 'AtkJink',     status: 'Maining',  style: 'maining',  tag: '208JJ2YLUY' },
+            { name: 'AtkJink Alt', status: 'Active',   style: 'active',   tag: 'V9GLUCRVP' },
+            { name: 'Sherrol',     status: 'Inactive', style: 'inactive', tag: 'UR9LGV0UR' },
+            { name: 'Jimmit',      status: 'Inactive', style: 'inactive', tag: 'UUGQQY8LY' },
+            { name: 'np',          status: 'Inactive', style: 'inactive', tag: 'V8JPQ088C' }
+        ];
+
+        function renderClashAccounts() {
+            const container = document.getElementById('clash-accounts');
+            container.innerHTML = '';
+            
+            clashAccountsData.forEach((acc, index) => {
+                const row = document.createElement('div');
+                row.className = 'account-item-row';
+                
+                // Generates a link to RoyaleAPI using the player tag
+                const linkUrl = acc.tag !== 'REPLACE_THIS' 
+                    ? `https://royaleapi.com/player/${acc.tag}` 
+                    : `https://royaleapi.com/player/search`;
+
+                row.innerHTML = `
+                    <a href="${linkUrl}" target="_blank" class="account-link" title="View on RoyaleAPI">${acc.name} ↗</a>
+                    <span class="clash-status-pill ${acc.style}">${acc.status}</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // Toggle Settings Menu
+        function toggleSettings() {
+            const dropdown = document.getElementById("settings-dropdown");
+            const btn = document.getElementById("settings-btn");
+            dropdown.classList.toggle("show");
+            btn.classList.toggle("active");
+            playLofiSound('click');
+        }
+
+        // Close settings when clicking outside
+        document.addEventListener('click', function(event) {
+            const container = document.querySelector('.settings-container');
+            if (!container.contains(event.target)) {
+                document.getElementById("settings-dropdown").classList.remove("show");
+                document.getElementById("settings-btn").classList.remove("active");
+            }
+        });
+
+        // Helper to update button UI inside Dropdown
+        function updateThemeButton() {
+            const iconDisplay = document.getElementById("theme-icon-display");
+            if (document.body.classList.contains("dark-mode")) {
+                iconDisplay.innerHTML = moonIcon; 
+            } else {
+                iconDisplay.innerHTML = sunIcon; 
+            }
+        }
+
+        function updateSoundButton() {
+            const iconDisplay = document.getElementById("sound-icon-display");
+            if (soundEnabled) {
+                iconDisplay.innerHTML = soundOnIcon;
+            } else {
+                iconDisplay.innerHTML = soundOffIcon;
+            }
+        }
+
+        // TOGGLE FUNCTION with localStorage support
+        function toggleTheme() {
+            document.body.classList.toggle("dark-mode");
+            
+            // Save user preference
+            if (document.body.classList.contains("dark-mode")) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+            
+            playLofiSound('click');
+            updateThemeButton();
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('sound', soundEnabled ? 'enabled' : 'disabled');
+            playLofiSound('click');
+            updateSoundButton();
+        }
+
+        // Copy Email Logic
+        function copyEmail(e) {
+            if(e) e.preventDefault();
+            
+            // Define the email to copy (Placeholder)
+            const emailToCopy = "contact@example.com"; 
+
+            // Copy logic - creates temporary textarea to ensure compatibility
+            const textArea = document.createElement("textarea");
+            textArea.value = emailToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error('Unable to copy', err);
+            }
+            document.body.removeChild(textArea);
+
+            // Show Toast
+            const toast = document.getElementById('toast-notification');
+            toast.classList.add('show');
+            
+            // Hide after 2 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // --- AUDIO ENGINE: INTERACTION SOUNDS ONLY ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Track the active hover sound to allow interruption
+        let currentHoverOsc = null;
+        let currentHoverGain = null;
+        let lastClickTime = 0;
+
+        function enterHub() {
+            // 1. Resume Audio Context immediately on click
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            // 2. Play a welcoming "start" sound (optional but nice)
+            playLofiSound('click'); 
+            
+            // 3. Hide Splash Screen
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('hidden-splash');
+        }
+
+        function playLofiSound(type) {
+            // Check global mute switch first
+            if (!soundEnabled) return;
+
+            // Safety check in case context is still suspended (shouldn't happen after enterHub)
+            if (audioCtx.state === 'suspended') return;
+
+            // Priority Logic:
+            // 1. If clicking, silence any active hover sound immediately.
+            // 2. If hovering, ensure we didn't JUST click (prevent accidental hover noise during click).
+            
+            if (type === 'click') {
+                lastClickTime = Date.now();
+                if (currentHoverOsc) {
+                    try {
+                        // Ramp down active hover quickly to avoid clicking pop, then stop
+                        currentHoverGain.gain.cancelScheduledValues(audioCtx.currentTime);
+                        currentHoverGain.gain.setValueAtTime(currentHoverGain.gain.value, audioCtx.currentTime);
+                        currentHoverGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.01);
+                        currentHoverOsc.stop(audioCtx.currentTime + 0.01);
+                    } catch(e) { /* ignore if already stopped */ }
+                    currentHoverOsc = null;
+                    currentHoverGain = null;
+                }
+            } else if (type === 'hover') {
+                // If we clicked less than 200ms ago, ignore this hover (it's likely part of the click action)
+                if (Date.now() - lastClickTime < 200) return;
+                
+                // If a hover is already playing, let it finish or interrupt? 
+                // Usually letting it finish overlaps nicely, but we track it for click interruption.
+                if (currentHoverOsc) {
+                        try {
+                        currentHoverOsc.stop();
+                    } catch(e) {}
+                }
+            }
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'hover') {
+                // Track this oscillator/gain so click can cancel it
+                currentHoverOsc = oscillator;
+                currentHoverGain = gainNode;
+
+                // Sound: Soft high "tink" / Rhodes-ish key
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); 
+                oscillator.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.1);
+                
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+
+                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+                
+                // Cleanup reference when done
+                oscillator.onended = () => {
+                    if (currentHoverOsc === oscillator) {
+                        currentHoverOsc = null;
+                        currentHoverGain = null;
+                    }
+                };
+
+            } else if (type === 'click') {
+                // Sound: Deeper "thock"
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.15);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(600, audioCtx.currentTime);
+
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.15);
+            }
+        }
+
+        // Attach listeners to all interactive elements
+        function addSoundListeners() {
+            // FIXED: Removed '.project-item' from the list.
+            // Since links are already covered by the 'a' selector, this prevents 
+            // the static <div> project items from triggering sounds.
+            const interactables = document.querySelectorAll('button, a, .social-card, .yt-card, .settings-btn, .setting-row, .enter-btn');
+            
+            interactables.forEach(el => {
+                // Remove old listeners to prevent duplicates if called multiple times
+                el.removeEventListener('mouseenter', playLofiHover); 
+                el.removeEventListener('mousedown', playLofiClick);
+                
+                el.addEventListener('mouseenter', playLofiHover);
+                el.addEventListener('mousedown', playLofiClick);
+            });
+        }
+        
+        // Defined handlers separately to allow for cleaner re-attachment
+        const playLofiHover = () => playLofiSound('hover');
+        const playLofiClick = () => playLofiSound('click');
+
+        // INITIALIZATION
+        (function() {
+            // Theme Init
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+
+            // Sound Init
+            const savedSound = localStorage.getItem('sound');
+            // Default to true if not set
+            if (savedSound === 'disabled') {
+                soundEnabled = false;
+            } else {
+                soundEnabled = true;
+            }
+
+            updateThemeButton();
+            updateSoundButton();
+            
+            // FIXED ORDER:
+            // 1. Render the Clash Accounts FIRST so the links exist in the DOM
+            renderClashAccounts();
+            
+            // 2. THEN attach sound listeners (so it finds the new links)
+            addSoundListeners();
+        })();
+    </script>
+</body>
+</html>
